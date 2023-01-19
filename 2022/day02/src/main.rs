@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::process;
 
+#[derive(Debug)]
 enum RPC {
     Rock,
     Paper,
@@ -23,31 +24,38 @@ impl RPC {
     }
 
     fn play_rpc(player1: RPC, player2: RPC) -> usize {
+        println!("play_rpc() with player1={:?}, player2={:?}", player1, player2);
         let mut score = 0usize;
         match player1 {
             RPC::Rock => { 
                 score += 1;
                 match player2 {
                     RPC::Rock => { score += 3; }
-                    RPC::Paper => {score += 0;}
-                    RPC::Scissors => {score += 6;} 
-            }}
+                    RPC::Paper => { score += 0; }
+                    RPC::Scissors => { score += 6; } 
+                }
+            }
             RPC::Paper => { 
                 score += 2;
                 match player2 {
                     RPC::Rock => { score += 6; }
-                    RPC::Paper => {score += 3;}
-                    RPC::Scissors => {score += 0;} 
-            }}
+                    RPC::Paper => { score += 3; }
+                    RPC::Scissors => { score += 0; } 
+                }
+            }
             RPC::Scissors => { 
                 score += 3;
+                println!("score a: {score}");
                 match player2 {
-                    RPC::Rock => { score += 0; }
-                    RPC::Paper => {score += 6;}
-                    RPC::Scissors => {score += 3;} 
-            }}
+                    RPC::Rock => { score += 0; println!("A"); }
+                    RPC::Paper => { score += 6; println!("B"); }
+                    RPC::Scissors => { score += 3; println!("C"); } 
+                }
+                println!("score b: {score}");
+            }
         }
 
+        println!("score: {score}");
         score
     }
 
@@ -83,6 +91,8 @@ fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
             ) 
         }
 
+        println!("{line_str}");
+
         let mut values = Vec::with_capacity(2);
         // Not doing a loop here because the logic is different on each iteration
         let mut iter = line_str.chars();
@@ -115,17 +125,18 @@ fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
                     .to_string())
             ) 
         } else {
-            values.push(val1);
+            values.push(val3);
         }
-
+        println!("parsed: {:?}", values);
         // We finally guaranteed the data we want to see, now we can play rock paper scissors safely
-        score += RPC::play_rpc_from_vec(values)
+        score += RPC::play_rpc_from_vec(values);
+        println!("new score: {score}");
     }
     Ok(score)
 }
 
 fn main() {
-    let input_file = "input1.txt";
+    let input_file = "real_input.txt";
 
     let total_score = day2(input_file).unwrap_or_else(|err| {
         println!("Problem during day2: {err}");
