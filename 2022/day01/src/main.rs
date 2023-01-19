@@ -20,6 +20,7 @@ fn day1(input_path: &str) -> Result<usize, Box<dyn error::Error>> {
                 max_cal = this_cal;
                 max_elf = this_elf;
             }
+            this_cal = 0;
         } else {
             this_cal += line_str.parse::<usize>()?;
         }
@@ -29,7 +30,7 @@ fn day1(input_path: &str) -> Result<usize, Box<dyn error::Error>> {
 }
 
 fn main() {
-    let input_path = "input2.txt";
+    let input_path = "input1.txt";
     let which_elf = day1(input_path).unwrap_or_else(|err| {
         println!("Problem during day1: {err}");
         process::exit(1);
