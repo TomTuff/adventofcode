@@ -32,9 +32,10 @@ fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
 
         let mut values = Vec::with_capacity(2);
         // Not doing a loop here because the logic is different on each iteration
-        let val1 = line_str.chars().nth(0).expect("We guaranteed the length of this line");
-        let val2 = line_str.chars().nth(0).expect("We guaranteed the length of this line");
-        let val3 = line_str.chars().nth(0).expect("We guaranteed the length of this line");
+        let mut iter = line_str.chars();
+        let val1 = iter.nth(0).expect("We guaranteed the length of this line");
+        let val2 = iter.nth(0).expect("We guaranteed the length of this line");
+        let val3 = iter.nth(0).expect("We guaranteed the length of this line");
 
         if !valid_col1.contains(&val1) {
             return Err(
@@ -47,6 +48,7 @@ fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
         }
 
         if val2 != ' ' {
+            println!("{val2}");
             return Err(
                 Box::<dyn error::Error + Send + Sync>
                     ::from("A line did not have space (' ') as second char"
