@@ -3,7 +3,35 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::process;
 
-fn play_rpc(values: Vec<char>) -> usize { 0 }
+enum RPC {
+    Rock,
+    Paper,
+    Scissors,
+}
+
+impl RPC {
+    // no check for character safety because we already checked it in day2().
+    // TODO: move that logic here, return Error.
+    fn from_char(character: char) -> Option<Self> {
+        let rock: [char; 2] = ['A', 'X'];
+        let paper: [char; 2] = ['B', 'Y'];
+        let scissors: [char; 2] = ['C', 'Z'];
+        if rock.contains(&character) { return Some(Self::Rock); } 
+        else if paper.contains(&character) { return Some(Self::Paper); }
+        else if scissors.contains(&character) { return Some(Self::Scissors); }
+        else { return None }
+    }
+
+    fn play_rpc(player1: RPC, player2: RPC) -> usize {
+        0
+    }
+
+    // no check for vector length because we know day2 passes vec with length 2
+    fn play_rpc_from_vec(values: Vec<char>) -> usize { 
+        Self::play_rpc(RPC::from_char(values[0]).expect("we know we sent a good input from day2()"), 
+                       RPC::from_char(values[1]).expect("we know we sent a good input from day2()"))
+    }
+}
 
 fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
     let file = File::open(input_file)?;
@@ -48,7 +76,6 @@ fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
         }
 
         if val2 != ' ' {
-            println!("{val2}");
             return Err(
                 Box::<dyn error::Error + Send + Sync>
                     ::from("A line did not have space (' ') as second char"
@@ -67,7 +94,7 @@ fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
         }
 
         // We finally guaranteed the data we want to see, now we can play rock paper scissors safely
-        score += play_rpc(values)
+        score += RPC::play_rpc_from_vec(values)
     }
     Ok(score)
 }
