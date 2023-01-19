@@ -135,6 +135,74 @@ fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
     Ok(score)
 }
 
+#[cfg(test)]
+pub mod test {
+    use super::*;
+
+    #[test]
+    fn perm1() {
+        let test_vec = vec!['A', 'X'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 4);
+    }
+
+    #[test]
+    fn perm2() {
+        let test_vec = vec!['A', 'Y'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 1);
+    }
+
+    #[test]
+    fn perm3() {
+        let test_vec = vec!['A', 'Z'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 7);
+    }
+
+    #[test]
+    fn perm4() {
+        let test_vec = vec!['B', 'X'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 8);
+    }
+
+    #[test]
+    fn perm5() {
+        let test_vec = vec!['B', 'Y'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 5);
+    }
+
+    #[test]
+    fn perm6() {
+        let test_vec = vec!['B', 'Z'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 2);
+    }
+
+    #[test]
+    fn perm7() {
+        let test_vec = vec!['C', 'X'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 3);
+    }
+
+    #[test]
+    fn perm8() {
+        let test_vec = vec!['C', 'Y'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 9);
+    }
+
+    #[test]
+    fn perm9() {
+        let test_vec = vec!['C', 'Z'];
+        let score = RPC::play_rpc_from_vec(test_vec);
+        assert_eq!(score, 6);
+    }
+}
+
 fn main() {
     let input_file = "real_input.txt";
 
