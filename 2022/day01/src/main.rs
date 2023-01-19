@@ -10,10 +10,9 @@ fn day1(input_path: &str) -> Result<usize, Box<dyn error::Error>> {
     let mut this_elf = 0usize;
     let mut max_cal = 0usize;
     let mut max_elf = 0usize;
-    let mut line_str = String::new();
 
     for line in reader.lines() {
-        line_str = line?;
+        let line_str = line?;
         if line_str.len() == 0 {
             this_elf += 1;
             if this_cal > max_cal {
