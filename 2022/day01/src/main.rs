@@ -7,13 +7,11 @@ fn day1_part1(input_path: &str) -> Result<usize, Box<dyn error::Error>> {
     let file = File::open(input_path)?;
     let reader = BufReader::new(file);
     let mut this_cal = 0usize;
-    let mut this_elf = 0usize;
     let mut max_cal = 0usize;
 
     for line in reader.lines() {
         let line_str = line?;
         if line_str.len() == 0 {
-            this_elf += 1;
             if this_cal > max_cal {
                 max_cal = this_cal;
             }
@@ -26,8 +24,27 @@ fn day1_part1(input_path: &str) -> Result<usize, Box<dyn error::Error>> {
     Ok(max_cal)
 }
 
-fn day1_part2(input_path: &str) -> Result<usize, Box<dyn error::Error>> {
-    Ok(1)
+fn day1_part2(input_path: &str) -> Result<usize, Box<dyn error::Error>> {    
+    let file = File::open(input_path)?;
+    let reader = BufReader::new(file);
+    let mut this_cal = 0usize;
+    let mut max_3_cal = vec![];
+
+    for line in reader.lines() {
+        let line_str = line?;
+        if line_str.len() == 0 {
+            max_3_cal.push(this_cal);
+            if max_3_cal.len() > 3 {
+                let min_value = max_3_cal.iter().min().expect("max_3_cal must have non-zero length here");
+                max_3_cal.swap_remove(max_3_cal.iter().position(|&r| r == *min_value).expect("min_value must be in the list"));
+            }
+            this_cal = 0;
+        } else {
+            this_cal += line_str.parse::<usize>()?;
+        }
+    }
+
+    Ok(max_3_cal.iter().sum())
 }
 
 fn main() {
@@ -38,9 +55,9 @@ fn main() {
     });
     println!("The elf with the most calories has {max_cal} calories on them");
 
-    let max_3_cals = day1_part2(input_path).unwrap_or_else(|err| {
+    let sum_max_3_cals = day1_part2(input_path).unwrap_or_else(|err| {
         println!("Problem during day1 part1: {err}");
         process::exit(1);
     });
-    println!("The 3 elves with the most calories have {max_3_cals} combined calories on them");
+    println!("The 3 elves with the most calories have {sum_max_3_cals} combined calories on them");
 }
