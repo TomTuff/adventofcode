@@ -25,14 +25,14 @@ fn day1(input_path: &str) -> Result<usize, Box<dyn error::Error>> {
         }
     }
 
-    Ok(max_elf)
+    Ok(max_cal)
 }
 
 fn main() {
-    let input_path = "input1.txt";
-    let which_elf = day1(input_path).unwrap_or_else(|err| {
+    let input_path = "real_input.txt";
+    let max_cal = day1(input_path).unwrap_or_else(|err| {
         println!("Problem during day1: {err}");
         process::exit(1);
     });
-    println!("The {which_elf}th elf has the most calories with them")
+    println!("The elf with the most calories has {max_cal} calories on them")
 }
