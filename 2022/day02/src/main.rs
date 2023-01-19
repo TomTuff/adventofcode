@@ -12,18 +12,43 @@ enum RPC {
 impl RPC {
     // no check for character safety because we already checked it in day2().
     // TODO: move that logic here, return Error.
-    fn from_char(character: char) -> Option<Self> {
+    fn from_char(character: char) -> Option<RPC> {
         let rock: [char; 2] = ['A', 'X'];
         let paper: [char; 2] = ['B', 'Y'];
         let scissors: [char; 2] = ['C', 'Z'];
-        if rock.contains(&character) { return Some(Self::Rock); } 
-        else if paper.contains(&character) { return Some(Self::Paper); }
-        else if scissors.contains(&character) { return Some(Self::Scissors); }
+        if rock.contains(&character) { return Some(RPC::Rock); } 
+        else if paper.contains(&character) { return Some(RPC::Paper); }
+        else if scissors.contains(&character) { return Some(RPC::Scissors); }
         else { return None }
     }
 
     fn play_rpc(player1: RPC, player2: RPC) -> usize {
-        0
+        let mut score = 0usize;
+        match player1 {
+            RPC::Rock => { 
+                score += 1;
+                match player2 {
+                    RPC::Rock => { score += 3; }
+                    RPC::Paper => {score += 0;}
+                    RPC::Scissors => {score += 6;} 
+            }}
+            RPC::Paper => { 
+                score += 2;
+                match player2 {
+                    RPC::Rock => { score += 6; }
+                    RPC::Paper => {score += 3;}
+                    RPC::Scissors => {score += 0;} 
+            }}
+            RPC::Scissors => { 
+                score += 3;
+                match player2 {
+                    RPC::Rock => { score += 0; }
+                    RPC::Paper => {score += 6;}
+                    RPC::Scissors => {score += 3;} 
+            }}
+        }
+
+        score
     }
 
     // no check for vector length because we know day2 passes vec with length 2
