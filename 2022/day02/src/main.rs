@@ -4,6 +4,13 @@ use std::io::{BufReader, BufRead};
 use std::process;
 
 #[derive(Debug)]
+enum RPCOutcome {
+    Win,
+    Loss,
+    Tie,
+}
+
+#[derive(Debug)]
 enum RPC {
     Rock,
     Paper,
@@ -23,7 +30,7 @@ impl RPC {
         else { return None }
     }
 
-    fn play_rpc(player1: RPC, player2: RPC) -> usize {
+    fn play_rpc(player1: &RPC, player2: RPC) -> usize {
         println!("play_rpc() with player1={:?}, player2={:?}", player1, player2);
         let mut score = 0usize;
         //finally spotted the bug; "you" are the right column. can fix by just switching the match statements around.
@@ -59,8 +66,42 @@ impl RPC {
 
     // no check for vector length because we know day2 passes vec with length 2
     fn play_rpc_from_vec(values: Vec<char>) -> usize { 
-        Self::play_rpc(RPC::from_char(values[0]).expect("we know we sent a good input from day2()"), 
+        Self::play_rpc(&RPC::from_char(values[0]).expect("we know we sent a good input from day2()"), 
                        RPC::from_char(values[1]).expect("we know we sent a good input from day2()"))
+    }
+
+    fn determine_target_move(oppenents_play: &RPC, desired_outcome: RPCOutcome) -> RPC {
+        match oppenents_play {
+            RPC::Rock => {
+                match desired_outcome {
+                    RPCOutcome::Win => { RPC::Paper }
+                    RPCOutcome::Loss => { RPC::Scissors }
+                    RPCOutcome::Tie => { RPC::Rock }
+
+                }
+            }
+            RPC::Paper => {
+                match desired_outcome {
+                    RPCOutcome::Win => { RPC::Scissors }
+                    RPCOutcome::Loss => { RPC::Rock }
+                    RPCOutcome::Tie => { RPC::Paper }
+
+                }
+            }
+            RPC::Scissors => {
+                match desired_outcome {
+                    RPCOutcome::Win => { RPC::Rock }
+                    RPCOutcome::Loss => { RPC::Paper }
+                    RPCOutcome::Tie => { RPC::Scissors }
+
+                }
+            }
+        }
+    }
+
+    fn rig_rpc(oppenents_play: &RPC, desired_outcome: RPCOutcome) -> usize {
+        let our_play = RPC::determine_target_move(oppenents_play, desired_outcome);
+        RPC::play_rpc(oppenents_play, our_play)
     }
 }
 
