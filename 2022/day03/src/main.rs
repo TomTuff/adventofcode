@@ -2,6 +2,7 @@ use std::process;
 use std::error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::time::{Duration, Instant};
 
 #[derive(Debug)]
 struct Rucksack<'a> {
@@ -78,14 +79,20 @@ fn day3_part1(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
     for line in reader.lines() {
         let line_str = line?;
         priority += Rucksack::from_str(&line_str).priority();
-        // // let's tease out the bug with prints
-        // let ruck = Rucksack::from_str(&line_str);
-        // println!("ruck: {:?}", ruck);
-        // let shared = ruck.find_shared().expect("a duplicate is guaranteed by puzzle statement");
-        // println!("shared char: {shared}");
-        // let this_priority = Rucksack::priority_from_char(&shared).expect("puzzle guarantees a-z or A-Z");
-        // println!("this priority: {this_priority}");
-        // priority += this_priority;
+    }
+
+    Ok(priority)
+}
+
+fn day3_part1_fast(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
+    let file = File::open(input_file)?;
+    let reader = BufReader::new(file);
+
+    let mut priority = 0usize;
+
+    for line in reader.lines() {
+        let line_str = line?;
+        priority += Rucksack::from_str(&line_str).priority_fast();
     }
 
     Ok(priority)
@@ -94,10 +101,26 @@ fn day3_part1(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
 fn main() {
     let input_file = "real_input.txt";
 
-    let priority = day3_part1(input_file).unwrap_or_else(|err| {
+    //SLOW
+    let start = Instant::now();
+    let priority_slow = day3_part1(input_file).unwrap_or_else(|err| {
         println!("Problem during day3_part1: {err}");
         process::exit(1);
     });
+    let duration_slow = start.elapsed();
 
-    println!("Total priority: {priority}");
+    //FAST
+    let start = Instant::now();
+    let priority_fast = day3_part1_fast(input_file).unwrap_or_else(|err| {
+        println!("Problem during day3_part1: {err}");
+        process::exit(1);
+    });
+    let duration_fast = start.elapsed();
+
+
+    println!("Total priority, slow algo: {priority_slow}");
+    println!("Total priority, fast algo: {priority_fast}");
+    println!("Time elapsed for slow: {:?}", duration_slow);
+    println!("Time elapsed for slow: {:?}", duration_fast);
+    println!("Fast is faster by a factor of {:?}", duration_slow.as_micros() as f64 / duration_fast.as_micros() as f64);
 }
