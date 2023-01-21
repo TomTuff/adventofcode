@@ -34,7 +34,7 @@ impl Rucksack<'_> {
         // A - Z -> 065 - 090
         // a - z -> 097 - 122
         let num = *shared_char as u8;  // seems sketch but the puzzle guarantees our input
-        if num >= 65 && num <= 090 { Some((num - 64) as usize) } 
+        if num >= 65 && num <= 090 { Some((num - 64 + 26) as usize) } 
         else if num >= 97 && num <= 122 { Some((num - 96) as usize) }
         else { None }
     }
@@ -53,7 +53,15 @@ fn day3_part1(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
 
     for line in reader.lines() {
         let line_str = line?;
-        priority += Rucksack::from_str(&line_str).priority();
+        // priority += Rucksack::from_str(&line_str).priority();
+        // let's tease out the bug with prints
+        let ruck = Rucksack::from_str(&line_str);
+        println!("ruck: {:?}", ruck);
+        let shared = ruck.find_shared().expect("a duplicate is guaranteed by puzzle statement");
+        println!("shared char: {shared}");
+        let this_priority = Rucksack::priority_from_char(&shared).expect("puzzle guarantees a-z or A-Z");
+        println!("this priority: {this_priority}");
+        priority += this_priority;
     }
 
     Ok(priority)
