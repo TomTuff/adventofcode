@@ -87,9 +87,35 @@ impl Trio<'_> {
         }
     }
 
+    fn find_shared2(str1: &str, str2: &str) -> String {
+        const ALPHABET_LEN: usize = 52;
+        let mut char_code = 0usize; 
+        let mut alphabet = [0; ALPHABET_LEN]; 
+        let mut chars = Vec::new();
+        for c in str1.chars() {
+            char_code = Rucksack::priority_from_char(&c).expect("puzzle guarantees a-z or A-Z") - 1;
+            alphabet[char_code] += 1; // store each char from first string
+        }
+        for c in str2.chars() {
+            char_code = Rucksack::priority_from_char(&c).expect("puzzle guarantees a-z or A-Z") - 1;
+            // we can stop at the first shared char because we are guaranteed only one overlapping item by the puzzle
+            if alphabet[char_code] != 0 { // a stored char is found!
+                chars.push(c);
+            }
+        }
+        String::from_iter(chars) 
+    }
+
     fn find_shared(self: &Self) -> Option<char> {
         //lets see if we can use a similar algorithm from Rucksack::find_shared
-        None
+        //lets make an algorithm that reduces two strings to their common characters. 
+        //run elf1 and elf2 throughthis, then run that output against elf3
+        let common1 = Trio::find_shared2(self.elf1, self.elf2);
+        println!("common1: {common1}");
+        let common2 = Trio::find_shared2(&common1, self.elf3);
+        println!("common2: {common2}");
+        assert_eq!(common2.len(), 1); //guaranteed by puzzle
+        common2.chars().nth(0)
     }
 
     fn priority(self: &Self) -> usize {
@@ -179,4 +205,5 @@ fn main() {
         println!("Problem during day3_part2: {err}");
         process::exit(1);
     });
+    println!("Total priority, part 2: {priority_part2}");
 }
