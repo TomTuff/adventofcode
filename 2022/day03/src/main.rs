@@ -19,20 +19,23 @@ impl Rucksack<'_> {
     }
 
     fn find_shared(self: &Self) -> Option<char> {
-        Some('a')
+        Some('A')
     }
 
-    fn priority_from_char(shared_char: &char) -> usize {
+    fn priority_from_char(shared_char: &char) -> Option<usize> {
         // instead of a huge match statement let's use the u8 representation
         // A - Z -> 065 - 090
-        // a - Z -> 097 - 122
-
-
-        0
+        // a - z -> 097 - 122
+        let num = *shared_char as u8;  // seems sketch but the puzzle guarantees our input
+        println!("{num}");
+        if num >= 65 && num <= 090 { Some((num - 64) as usize) } 
+        else if num >= 97 && num <= 122 { Some((num - 96) as usize) }
+        else { None }
     }
 
     fn priority(self: &Self) -> usize {
         Rucksack::priority_from_char(&self.find_shared().expect("a duplicate is guaranteed by puzzle statement"))
+            .expect("puzzle guarantees a-z or A-Z")
     }
 }
 
