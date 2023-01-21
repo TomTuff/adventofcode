@@ -111,10 +111,9 @@ impl Trio<'_> {
         //lets make an algorithm that reduces two strings to their common characters. 
         //run elf1 and elf2 throughthis, then run that output against elf3
         let common1 = Trio::find_shared2(self.elf1, self.elf2);
-        println!("common1: {common1}");
         let common2 = Trio::find_shared2(&common1, self.elf3);
-        println!("common2: {common2}");
-        assert_eq!(common2.len(), 1); //guaranteed by puzzle
+        //assert_eq!(common2.len(), 1); //guaranteed by puzzle
+        //actually it's guaranteed to be AT LEAST 1.
         common2.chars().nth(0)
     }
 
@@ -175,7 +174,7 @@ fn day3_part2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
 }
 
 fn main() {
-    let input_file = "test_input.txt";
+    let input_file = "real_input.txt";
 
     //SLOW
     let start = Instant::now();
