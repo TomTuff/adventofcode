@@ -26,10 +26,11 @@ impl RPC {
     fn play_rpc(player1: RPC, player2: RPC) -> usize {
         println!("play_rpc() with player1={:?}, player2={:?}", player1, player2);
         let mut score = 0usize;
-        match player1 {
+        //finally spotted the bug; "you" are the right column. can fix by just switching the match statements around.
+        match player2 {
             RPC::Rock => { 
                 score += 1;
-                match player2 {
+                match player1 {
                     RPC::Rock => { score += 3; }
                     RPC::Paper => { score += 0; }
                     RPC::Scissors => { score += 6; } 
@@ -37,7 +38,7 @@ impl RPC {
             }
             RPC::Paper => { 
                 score += 2;
-                match player2 {
+                match player1 {
                     RPC::Rock => { score += 6; }
                     RPC::Paper => { score += 3; }
                     RPC::Scissors => { score += 0; } 
@@ -45,16 +46,13 @@ impl RPC {
             }
             RPC::Scissors => { 
                 score += 3;
-                println!("score a: {score}");
-                match player2 {
-                    RPC::Rock => { score += 0; println!("A"); }
-                    RPC::Paper => { score += 6; println!("B"); }
-                    RPC::Scissors => { score += 3; println!("C"); } 
+                match player1 {
+                    RPC::Rock => { score += 0; }
+                    RPC::Paper => { score += 6; }
+                    RPC::Scissors => { score += 3; } 
                 }
-                println!("score b: {score}");
             }
         }
-
         println!("score: {score}");
         score
     }
@@ -66,7 +64,7 @@ impl RPC {
     }
 }
 
-fn day2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
+fn day2_part1(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
     let file = File::open(input_file)?;
     let reader = BufReader::new(file);
 
@@ -150,21 +148,21 @@ pub mod test {
     fn perm2() {
         let test_vec = vec!['A', 'Y'];
         let score = RPC::play_rpc_from_vec(test_vec);
-        assert_eq!(score, 1);
+        assert_eq!(score, 8);
     }
 
     #[test]
     fn perm3() {
         let test_vec = vec!['A', 'Z'];
         let score = RPC::play_rpc_from_vec(test_vec);
-        assert_eq!(score, 7);
+        assert_eq!(score, 3);
     }
 
     #[test]
     fn perm4() {
         let test_vec = vec!['B', 'X'];
         let score = RPC::play_rpc_from_vec(test_vec);
-        assert_eq!(score, 8);
+        assert_eq!(score, 1);
     }
 
     #[test]
@@ -178,21 +176,21 @@ pub mod test {
     fn perm6() {
         let test_vec = vec!['B', 'Z'];
         let score = RPC::play_rpc_from_vec(test_vec);
-        assert_eq!(score, 2);
+        assert_eq!(score, 9);
     }
 
     #[test]
     fn perm7() {
         let test_vec = vec!['C', 'X'];
         let score = RPC::play_rpc_from_vec(test_vec);
-        assert_eq!(score, 3);
+        assert_eq!(score, 7);
     }
 
     #[test]
     fn perm8() {
         let test_vec = vec!['C', 'Y'];
         let score = RPC::play_rpc_from_vec(test_vec);
-        assert_eq!(score, 9);
+        assert_eq!(score, 2);
     }
 
     #[test]
@@ -206,10 +204,10 @@ pub mod test {
 fn main() {
     let input_file = "real_input.txt";
 
-    let total_score = day2(input_file).unwrap_or_else(|err| {
+    let total_score = day2_part1(input_file).unwrap_or_else(|err| {
         println!("Problem during day2: {err}");
         process::exit(1);
     });
 
-    println!("Total score at RPC: {total_score}");
+    println!("Total score at RPC, by following part 1 rules: {total_score}");
 }
