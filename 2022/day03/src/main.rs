@@ -29,6 +29,25 @@ impl Rucksack<'_> {
         None
     }
 
+    fn find_shared_fast(self: &Self) -> Option<char> {
+        //let's fully leverage google now
+        //https://stackoverflow.com/questions/52882267/how-to-find-if-two-strings-have-common-characters-in-rust   
+        const ALPHABET_LEN: usize = 52;
+        let mut char_code = 0usize; 
+        let mut alphabet = [0; ALPHABET_LEN]; 
+        for c in self.compartment1.chars() {
+            char_code = Rucksack::priority_from_char(&c).expect("puzzle guarantees a-z or A-Z") - 1;
+            alphabet[char_code] += 1; // store each char from first string
+        }
+        for c in self.compartment2.chars() {
+            char_code = Rucksack::priority_from_char(&c).expect("puzzle guarantees a-z or A-Z") - 1;
+            if alphabet[char_code] != 0 { // a stored char is found!
+                return Some(c);
+            }
+        }
+        None
+    }
+
     fn priority_from_char(shared_char: &char) -> Option<usize> {
         // instead of a huge match statement let's use the u8 representation
         // A - Z -> 065 - 090
@@ -43,6 +62,11 @@ impl Rucksack<'_> {
         Rucksack::priority_from_char(&self.find_shared().expect("a duplicate is guaranteed by puzzle statement"))
             .expect("puzzle guarantees a-z or A-Z")
     }
+
+    fn priority_fast(self: &Self) -> usize {
+        Rucksack::priority_from_char(&self.find_shared_fast().expect("a duplicate is guaranteed by puzzle statement"))
+            .expect("puzzle guarantees a-z or A-Z")
+    }
 }
 
 fn day3_part1(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
@@ -53,22 +77,22 @@ fn day3_part1(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
 
     for line in reader.lines() {
         let line_str = line?;
-        // priority += Rucksack::from_str(&line_str).priority();
-        // let's tease out the bug with prints
-        let ruck = Rucksack::from_str(&line_str);
-        println!("ruck: {:?}", ruck);
-        let shared = ruck.find_shared().expect("a duplicate is guaranteed by puzzle statement");
-        println!("shared char: {shared}");
-        let this_priority = Rucksack::priority_from_char(&shared).expect("puzzle guarantees a-z or A-Z");
-        println!("this priority: {this_priority}");
-        priority += this_priority;
+        priority += Rucksack::from_str(&line_str).priority();
+        // // let's tease out the bug with prints
+        // let ruck = Rucksack::from_str(&line_str);
+        // println!("ruck: {:?}", ruck);
+        // let shared = ruck.find_shared().expect("a duplicate is guaranteed by puzzle statement");
+        // println!("shared char: {shared}");
+        // let this_priority = Rucksack::priority_from_char(&shared).expect("puzzle guarantees a-z or A-Z");
+        // println!("this priority: {this_priority}");
+        // priority += this_priority;
     }
 
     Ok(priority)
 }
 
 fn main() {
-    let input_file = "test_input.txt";
+    let input_file = "real_input.txt";
 
     let priority = day3_part1(input_file).unwrap_or_else(|err| {
         println!("Problem during day3_part1: {err}");
