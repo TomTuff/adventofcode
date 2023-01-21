@@ -42,6 +42,7 @@ impl Rucksack<'_> {
         }
         for c in self.compartment2.chars() {
             char_code = Rucksack::priority_from_char(&c).expect("puzzle guarantees a-z or A-Z") - 1;
+            // we can stop at the first shared char because we are guaranteed only one overlapping item by the puzzle
             if alphabet[char_code] != 0 { // a stored char is found!
                 return Some(c);
             }
@@ -66,6 +67,33 @@ impl Rucksack<'_> {
 
     fn priority_fast(self: &Self) -> usize {
         Rucksack::priority_from_char(&self.find_shared_fast().expect("a duplicate is guaranteed by puzzle statement"))
+            .expect("puzzle guarantees a-z or A-Z")
+    }
+}
+
+struct Trio<'a> {
+    //considered making this fields Rucksacks but the only method we need is a class method (priority from char)
+    elf1: &'a str,
+    elf2: &'a str,
+    elf3: &'a str,
+}
+
+impl Trio<'_> {
+    fn from_array(elves: &[String; 3]) -> Trio {
+        Trio {
+            elf1: &elves[0],
+            elf2: &elves[1],
+            elf3: &elves[2],
+        }
+    }
+
+    fn find_shared(self: &Self) -> Option<char> {
+        //lets see if we can use a similar algorithm from Rucksack::find_shared
+        None
+    }
+
+    fn priority(self: &Self) -> usize {
+        Rucksack::priority_from_char(&self.find_shared().expect("a triplicate is guaranteed by puzzle statement"))
             .expect("puzzle guarantees a-z or A-Z")
     }
 }
@@ -98,8 +126,30 @@ fn day3_part1_fast(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
     Ok(priority)
 }
 
+fn day3_part2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
+    let file = File::open(input_file)?;
+    let reader = BufReader::new(file);
+
+    let mut priority = 0usize;
+
+    const EMPTY_STRING: String = String::new();
+    let mut ruck_array = [EMPTY_STRING; 3];
+    let mut idx = 0;
+
+    for line in reader.lines() {
+        ruck_array[idx] = line?;
+        idx += 1;
+        if idx == 3 {
+            idx = 0;
+            priority += Trio::from_array(&ruck_array).priority();
+        }
+    }
+
+    Ok(priority)
+}
+
 fn main() {
-    let input_file = "real_input.txt";
+    let input_file = "test_input.txt";
 
     //SLOW
     let start = Instant::now();
@@ -123,4 +173,10 @@ fn main() {
     println!("Time elapsed for slow: {:?}", duration_slow);
     println!("Time elapsed for slow: {:?}", duration_fast);
     println!("Fast is faster by a factor of {:?}", duration_slow.as_micros() as f64 / duration_fast.as_micros() as f64);
+
+    
+    let priority_part2 = day3_part2(input_file).unwrap_or_else(|err| {
+        println!("Problem during day3_part2: {err}");
+        process::exit(1);
+    });
 }
