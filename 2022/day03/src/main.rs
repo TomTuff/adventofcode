@@ -19,7 +19,14 @@ impl Rucksack<'_> {
     }
 
     fn find_shared(self: &Self) -> Option<char> {
-        Some('A')
+        //I could probably google some clever way to do this but let's start with the naive O(n^2) approach
+        for item in self.compartment1.chars() {
+            let item_as_str: String = vec![item].iter().collect();
+            if self.compartment2.contains(&item_as_str) {
+                return Some(item)
+            }
+        }
+        None
     }
 
     fn priority_from_char(shared_char: &char) -> Option<usize> {
@@ -27,7 +34,6 @@ impl Rucksack<'_> {
         // A - Z -> 065 - 090
         // a - z -> 097 - 122
         let num = *shared_char as u8;  // seems sketch but the puzzle guarantees our input
-        println!("{num}");
         if num >= 65 && num <= 090 { Some((num - 64) as usize) } 
         else if num >= 97 && num <= 122 { Some((num - 96) as usize) }
         else { None }
