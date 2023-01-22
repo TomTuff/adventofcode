@@ -43,7 +43,7 @@ impl AssignedPair {
     }
 
     fn does_overlap(self: &Self) -> bool {
-        //check lower bound
+        //check lower bound  lower_elf 1/5,  upper_elf 6/11
         let lower_elf: &ElfAssignment;
         let upper_elf: &ElfAssignment;
         if self.elf1.lower <= self.elf2.lower {
@@ -53,6 +53,13 @@ impl AssignedPair {
             lower_elf = &self.elf2;
             upper_elf = &self.elf1;
         }
+
+        //debug
+        println!("the pair: {:?}", self);
+        println!("lower elf: {:?}", lower_elf);
+        println!("upper elf: {:?}", upper_elf);
+        println!("expression 1: {:?}", lower_elf.lower <= upper_elf.lower);
+        println!("expression 2: {:?}", lower_elf.upper >= upper_elf.upper);
 
         //compare edge bounds
         (lower_elf.lower <= upper_elf.lower) & (lower_elf.upper >= upper_elf.upper)
@@ -78,7 +85,7 @@ fn day4_part1(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
 }
 
 fn main() {
-    let input_file = "test_input.txt";
+    let input_file = "real_input.txt";
 
     let contained_pairs = day4_part1(input_file).unwrap_or_else(|err| {
         println!("Problem during day4_part1: {err}");
@@ -109,7 +116,12 @@ mod test {
                 } 
             },
         };
-        assert!(!pair.does_overlap())
+        assert!(!pair.does_overlap());
+        let pair_swap = AssignedPair {
+            elf1: pair.elf2,
+            elf2: pair.elf1,
+        };
+        assert!(!pair_swap.does_overlap());
     }
 
     #[test]
@@ -128,7 +140,12 @@ mod test {
                 } 
             },
         };
-        assert!(pair.does_overlap())
+        assert!(pair.does_overlap());
+        let pair_swap = AssignedPair {
+            elf1: pair.elf2,
+            elf2: pair.elf1,
+        };
+        assert!(pair_swap.does_overlap());
     }
 
     #[test]
@@ -147,7 +164,12 @@ mod test {
                 } 
             },
         };
-        assert!(pair.does_overlap())
+        assert!(pair.does_overlap());
+        let pair_swap = AssignedPair {
+            elf1: pair.elf2,
+            elf2: pair.elf1,
+        };
+        assert!(pair_swap.does_overlap());
     }
 
     #[test]
@@ -166,7 +188,12 @@ mod test {
                 } 
             },
         };
-        assert!(pair.does_overlap())
+        assert!(pair.does_overlap());
+        let pair_swap = AssignedPair {
+            elf1: pair.elf2,
+            elf2: pair.elf1,
+        };
+        assert!(pair_swap.does_overlap());
     }
 
     #[test]
@@ -185,7 +212,12 @@ mod test {
                 } 
             },
         };
-        assert!(pair.does_overlap())
+        assert!(pair.does_overlap());
+        let pair_swap = AssignedPair {
+            elf1: pair.elf2,
+            elf2: pair.elf1,
+        };
+        assert!(pair_swap.does_overlap());
     }
 
     #[test]
@@ -204,6 +236,11 @@ mod test {
                 } 
             },
         };
-        assert!(pair.does_overlap())
+        assert!(!pair.does_overlap());
+        let pair_swap = AssignedPair {
+            elf1: pair.elf2,
+            elf2: pair.elf1,
+        };
+        assert!(!pair_swap.does_overlap());
     }
 }
