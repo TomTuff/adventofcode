@@ -67,18 +67,17 @@ impl AssignedPair {
             }
         }
 
-        //debug
-        println!("the pair: {:?}", self);
-        println!("lower elf: {:?}", lower_elf);
-        println!("upper elf: {:?}", upper_elf);
-        println!("expression 1: {:?}", lower_elf.lower <= upper_elf.lower);
-        println!("expression 2: {:?}", lower_elf.upper >= upper_elf.upper);
+        // //debug
+        // println!("the pair: {:?}", self);
+        // println!("lower elf: {:?}", lower_elf);
+        // println!("upper elf: {:?}", upper_elf);
+        // println!("expression 1: {:?}", lower_elf.lower <= upper_elf.lower);
+        // println!("expression 2: {:?}", lower_elf.upper >= upper_elf.upper);
 
         //compare edge bounds
         match overlap {
-            Overlap::Complete => { (lower_elf.upper >= upper_elf.upper) },
-            //Overlap::Partial => { (lower_elf.lower <= upper_elf.lower) | (lower_elf.upper >= upper_elf.upper) },
-            Overlap::Partial => { true },
+            Overlap::Complete => { lower_elf.upper >= upper_elf.upper },
+            Overlap::Partial => { lower_elf.upper >= upper_elf.lower },
         }
         
     }
@@ -129,7 +128,7 @@ fn day4_part2(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
 }
 
 fn main() {
-    let input_file = "test_input.txt";
+    let input_file = "real_input.txt";
 
     let contained_pairs = day4_part1(input_file).unwrap_or_else(|err| {
         println!("Problem during day4_part1: {err}");
