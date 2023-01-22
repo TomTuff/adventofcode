@@ -18,6 +18,11 @@ struct AssignedPair {
     elf2: ElfAssignment, 
 }
 
+enum Overlap {
+    Partial,
+    Complete,
+}
+
 impl AssignedPair {
     fn from_pair_str(pair_str: &str) -> AssignedPair {
         lazy_static! {
@@ -42,7 +47,7 @@ impl AssignedPair {
         }
     }
 
-    fn does_overlap_complete(self: &Self) -> bool {
+    fn does_overlap_combo(self: &Self, overlap: Overlap) -> bool {
         //check lower bound  lower_elf 1/5,  upper_elf 6/11
         let lower_elf: &ElfAssignment;
         let upper_elf: &ElfAssignment;
@@ -62,19 +67,28 @@ impl AssignedPair {
             }
         }
 
-        // //debug
-        // println!("the pair: {:?}", self);
-        // println!("lower elf: {:?}", lower_elf);
-        // println!("upper elf: {:?}", upper_elf);
-        // println!("expression 1: {:?}", lower_elf.lower <= upper_elf.lower);
-        // println!("expression 2: {:?}", lower_elf.upper >= upper_elf.upper);
+        //debug
+        println!("the pair: {:?}", self);
+        println!("lower elf: {:?}", lower_elf);
+        println!("upper elf: {:?}", upper_elf);
+        println!("expression 1: {:?}", lower_elf.lower <= upper_elf.lower);
+        println!("expression 2: {:?}", lower_elf.upper >= upper_elf.upper);
 
         //compare edge bounds
-        (lower_elf.lower <= upper_elf.lower) & (lower_elf.upper >= upper_elf.upper)
+        match overlap {
+            Overlap::Complete => { (lower_elf.upper >= upper_elf.upper) },
+            //Overlap::Partial => { (lower_elf.lower <= upper_elf.lower) | (lower_elf.upper >= upper_elf.upper) },
+            Overlap::Partial => { true },
+        }
+        
+    }
+
+    fn does_overlap_complete(self: &Self) -> bool {
+        self.does_overlap_combo(Overlap::Complete)
     }
 
     fn does_overlap_partial(self: &Self) -> bool {
-        true
+        self.does_overlap_combo(Overlap::Partial)
     }
 
     fn does_overlap_complete_from_pair_str(pair_str: &str) -> bool {
