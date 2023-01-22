@@ -43,7 +43,7 @@ impl AssignedPair {
     }
 
     fn does_overlap(self: &Self) -> bool {
-        true      
+        true
     }
 
     fn does_overlap_from_pair_str(pair_str: &str) -> bool {
@@ -74,4 +74,105 @@ fn main() {
     });
 
     println!("Total number of fully contained assignment pairs: {contained_pairs}");
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn case1_no_overlap() {
+        let pair = AssignedPair {
+            elf1: {
+                ElfAssignment { 
+                    lower: 1,
+                    upper: 3,
+                }
+            },
+            elf2: {
+                ElfAssignment { 
+                    lower: 2,
+                    upper: 4,
+                } 
+            },
+        };
+        assert!(!pair.does_overlap())
+    }
+
+    #[test]
+    fn case2_overlap() {
+        let pair = AssignedPair {
+            elf1: {
+                ElfAssignment { 
+                    lower: 1,
+                    upper: 5,
+                }
+            },
+            elf2: {
+                ElfAssignment { 
+                    lower: 2,
+                    upper: 4,
+                } 
+            },
+        };
+        assert!(pair.does_overlap())
+    }
+
+    #[test]
+    fn case3_overlap_with_lower_equal() {
+        let pair = AssignedPair {
+            elf1: {
+                ElfAssignment { 
+                    lower: 1,
+                    upper: 5,
+                }
+            },
+            elf2: {
+                ElfAssignment { 
+                    lower: 1,
+                    upper: 4,
+                } 
+            },
+        };
+        assert!(pair.does_overlap())
+    }
+
+    #[test]
+    fn case4_overlap_with_upper_equal() {
+        let pair = AssignedPair {
+            elf1: {
+                ElfAssignment { 
+                    lower: 2,
+                    upper: 5,
+                }
+            },
+            elf2: {
+                ElfAssignment { 
+                    lower: 1,
+                    upper: 5,
+                } 
+            },
+        };
+        assert!(pair.does_overlap())
+    }
+
+    #[test]
+    fn case54_overlap_with_both_equal() {
+        let pair = AssignedPair {
+            elf1: {
+                ElfAssignment { 
+                    lower: 1,
+                    upper: 5,
+                }
+            },
+            elf2: {
+                ElfAssignment { 
+                    lower: 1,
+                    upper: 5,
+                } 
+            },
+        };
+        assert!(pair.does_overlap())
+    }
 }
