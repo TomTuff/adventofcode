@@ -43,7 +43,19 @@ impl AssignedPair {
     }
 
     fn does_overlap(self: &Self) -> bool {
-        true
+        //check lower bound
+        let lower_elf: &ElfAssignment;
+        let upper_elf: &ElfAssignment;
+        if self.elf1.lower <= self.elf2.lower {
+            lower_elf = &self.elf1;
+            upper_elf = &self.elf2;
+        } else {
+            lower_elf = &self.elf2;
+            upper_elf = &self.elf1;
+        }
+
+        //compare edge bounds
+        (lower_elf.lower <= upper_elf.lower) & (lower_elf.upper >= upper_elf.upper)
     }
 
     fn does_overlap_from_pair_str(pair_str: &str) -> bool {
