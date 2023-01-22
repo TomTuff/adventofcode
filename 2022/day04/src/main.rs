@@ -78,7 +78,7 @@ fn day4_part1(input_file: &str) -> Result<usize, Box<dyn error::Error>> {
 }
 
 fn main() {
-    let input_file = "real_input.txt";
+    let input_file = "test_input.txt";
 
     let contained_pairs = day4_part1(input_file).unwrap_or_else(|err| {
         println!("Problem during day4_part1: {err}");
@@ -170,7 +170,7 @@ mod test {
     }
 
     #[test]
-    fn case54_overlap_with_both_equal() {
+    fn case5_overlap_with_both_equal() {
         let pair = AssignedPair {
             elf1: {
                 ElfAssignment { 
@@ -182,6 +182,25 @@ mod test {
                 ElfAssignment { 
                     lower: 1,
                     upper: 5,
+                } 
+            },
+        };
+        assert!(pair.does_overlap())
+    }
+
+    #[test]
+    fn case6_complete_no_overlap() {
+        let pair = AssignedPair {
+            elf1: {
+                ElfAssignment { 
+                    lower: 1,
+                    upper: 5,
+                }
+            },
+            elf2: {
+                ElfAssignment { 
+                    lower: 6,
+                    upper: 11,
                 } 
             },
         };
