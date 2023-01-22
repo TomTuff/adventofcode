@@ -46,20 +46,28 @@ impl AssignedPair {
         //check lower bound  lower_elf 1/5,  upper_elf 6/11
         let lower_elf: &ElfAssignment;
         let upper_elf: &ElfAssignment;
-        if self.elf1.lower <= self.elf2.lower {
+        if self.elf1.lower < self.elf2.lower {
             lower_elf = &self.elf1;
             upper_elf = &self.elf2;
-        } else {
+        } else if self.elf1.lower > self.elf2.lower {
             lower_elf = &self.elf2;
             upper_elf = &self.elf1;
+        } else { // this was the bug, lower bounds being equal necessitates checking the upper bound
+            if self.elf1.upper >= self.elf2.upper {
+                lower_elf = &self.elf1;
+                upper_elf = &self.elf2;
+            } else {
+                lower_elf = &self.elf2;
+                upper_elf = &self.elf1;                
+            }
         }
 
-        //debug
-        println!("the pair: {:?}", self);
-        println!("lower elf: {:?}", lower_elf);
-        println!("upper elf: {:?}", upper_elf);
-        println!("expression 1: {:?}", lower_elf.lower <= upper_elf.lower);
-        println!("expression 2: {:?}", lower_elf.upper >= upper_elf.upper);
+        // //debug
+        // println!("the pair: {:?}", self);
+        // println!("lower elf: {:?}", lower_elf);
+        // println!("upper elf: {:?}", upper_elf);
+        // println!("expression 1: {:?}", lower_elf.lower <= upper_elf.lower);
+        // println!("expression 2: {:?}", lower_elf.upper >= upper_elf.upper);
 
         //compare edge bounds
         (lower_elf.lower <= upper_elf.lower) & (lower_elf.upper >= upper_elf.upper)
