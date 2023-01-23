@@ -7,34 +7,53 @@ use regex;
 
 #[derive(Default)]
 struct CrateStacks {
-    // we have 9 crate stacks but we will use an array with length 10
-    // so we don't have to do -1 on the indexing or any debugging
-    cratestacks: Vec<Vec<String>>,
-    skip_lines: usize, // use this after we build it from a file to skip right to the proper line to pick up the command sequence
+    stacks: Vec<Vec<String>>,
+    num_crates: usize,
 }
 
 impl CrateStacks {
     fn from_file(file_path: &str) -> Option<CrateStacks> {
-        let file = File::open(file_path).expect("we should have this file 🤔");
-        let reader = BufReader::new(file);
-
+        // make empty stack for us to build up
         let mut stack = CrateStacks::default();
 
-        let re = regex::Regex::new(r"(\[[A-Z]\]\s|\s{4})").unwrap();
+        // find the # of crate stacks
+        let file = File::open(file_path).expect("we should have this file 🤔");
+        let reader = BufReader::new(file); 
+        let re_num_crates = regex::Regex::new(r"\s\d\s$").unwrap();
 
         for line in reader.lines() {
             let line_str = line.expect("this should be a valid line 🤔");
-            println!("line {:?}: {line_str}", stack.skip_lines);
-            stack.skip_lines += 1;
+            if let Some(num_crates) = re_num_crates.find(&line_str) {
+                stack.set_num_crates(num_crates
+                    .as_str()
+                    .trim()
+                    .parse::<usize>()
+                    .expect("regex guarantees this is a digit"));
+            }
+        }        
+
+
+        // read the initial state of the stacks
+        let file = File::open(file_path).expect("we should have this file 🤔");
+        let reader = BufReader::new(file);
+        let re_stack = regex::Regex::new(r"(\[[A-Z]\]\s?|\s{4})").unwrap();
+
+        for line in reader.lines() {
+            let line_str = line.expect("this should be a valid line 🤔");
             if line_str.len() == 0 { return Some(stack) }
             
-            for (i, cap) in re.captures_iter(&line_str).enumerate() {
+            for (i, cap) in re_stack.captures_iter(&line_str).enumerate() {
                 println!("capture {i}: {:?}", cap);
             }
             
         }
 
         None
+    }
+
+    fn set_num_crates(self: &mut Self, num_crates: usize) {
+        self.num_crates = num_crates;
+        self.stacks = Vec::with_capacity(num_crates);
     }
 
     fn perform_sequence_from_file(self: &mut Self, file_path: &str) {}
@@ -45,7 +64,7 @@ impl CrateStacks {
 }
 
 fn main() {    
-    let input_file = "test_input.txt";
+    let input_file = "real_input.txt";
     
     let mut stack = CrateStacks::from_file(input_file)
         .expect("puzzle input should guarantee CrateStacks");
