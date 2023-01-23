@@ -6,8 +6,7 @@ use regex;
 
 #[derive(Default, Debug)]
 struct CrateStacks {
-    stacks: Vec<Vec<String>>,
-    num_crates: usize,
+    stacks: Vec<Vec<char>>,
 }
 
 impl CrateStacks {
@@ -50,6 +49,7 @@ impl CrateStacks {
                         letter
                             .as_str()
                             .to_string()
+                            .as_bytes()[0] as char  //len = 1 guaranteed by the regex re_char!
                     )
                 }
             }      
@@ -59,7 +59,6 @@ impl CrateStacks {
     }
 
     fn set_num_crates(self: &mut Self, num_crates: usize) {
-        self.num_crates = num_crates;
         self.stacks.clear();
         self.stacks.resize(num_crates, Default::default());
     }
@@ -71,24 +70,47 @@ impl CrateStacks {
         let re_command = regex::Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap(); //move 5 from 8 to 2
 
         for line in reader.lines() {
-            if let Some(caps) = re_command.captures(&line.expect("this should be a valid line 🤔")) {
+            let line_str = &line.expect("this should be a valid line 🤔");
+            if let Some(caps) = re_command.captures(&line_str) {
+
+                //debug
+                println!("stacks before command = {line_str}\n{:?}", self.stacks);
+
                 let len = caps[1].parse::<usize>().expect("regex guarantees int");
-                let idx_from = caps[2].parse::<usize>().expect("regex guarantees int");
-                let idx_to = caps[3].parse::<usize>().expect("regex guarantees int");
+                let mut x = Vec::with_capacity(len);
+                let idx_from = caps[2].parse::<usize>().expect("regex guarantees int") - 1;
+                let len_from = self.stacks[idx_from].len();
+                let idx_to = caps[3].parse::<usize>().expect("regex guarantees int") - 1;
+                let len_to = self.stacks[idx_to].len();
+                
+                //debug
+                println!("len: {len},     idx_from: {idx_from},     idx_to: {idx_to},     len_from: {len_from}");
 
-                // self.stacks[idx_to].extend_from_slice(&mut self.stacks[idx_from][0..1])
-                // borrow checker not happy
+                for _ in 0..len {
+                    // self.stacks[idx_to].extend(self.stacks[idx_from]);
+                    x.push(self.stacks[idx_from].pop().unwrap());
+                }
 
-                // let sequence = &self.stacks[idx_from][0..1];
-                // self.stacks[idx_to].extend_from_slice(sequence);
-                // borrow checker still not happy
+                for _ in  0..len {
+                    self.stacks[idx_to].insert(len_to, x.pop().unwrap());
+                }
+
+                //debug
+                println!("x: {:?}", x);
+
+                //debug                 
+                println!("stacks after:\n{:?}\n\n\n", self.stacks);
             }
         }
 
     }
 
-    fn top_sequence(self: &Self) -> &str {
-        "hi"
+    fn top_sequence(self: &Self) -> String {
+        let mut v = Vec::new();
+        for idx in 0..self.stacks.len() {
+            v.push(*self.stacks[idx].last().unwrap_or_else(|| &' '))
+        }
+        v.into_iter().collect()
     }
 }
 
