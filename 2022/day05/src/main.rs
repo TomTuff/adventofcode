@@ -22,7 +22,6 @@ impl CrateStacks {
         }
 
         None
-        //CrateStacks { cratestacks: Default::default() }
     }
 
     fn perform_sequence_from_file(self: &mut Self, file_path: &str) {}
