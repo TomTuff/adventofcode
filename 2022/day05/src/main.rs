@@ -44,7 +44,6 @@ impl CrateStacks {
             if line_str.len() == 0 { return Some(stack) }
             
             for (i, cap) in re_stack.captures_iter(&line_str).enumerate() {
-                println!("capture {i}: {:?}", cap);
                 if let Some(letter) = re_char.find(&cap[0]) {
                     stack.stacks[i].insert(
                         0, 
@@ -65,7 +64,28 @@ impl CrateStacks {
         self.stacks.resize(num_crates, Default::default());
     }
 
-    fn perform_sequence_from_file(self: &mut Self, file_path: &str) {}
+    fn perform_sequence_from_file(self: &mut Self, file_path: &str) {
+        let file = File::open(file_path).expect("we should have this file 🤔");
+        let reader = BufReader::new(file);
+
+        let re_command = regex::Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap(); //move 5 from 8 to 2
+
+        for line in reader.lines() {
+            if let Some(caps) = re_command.captures(&line.expect("this should be a valid line 🤔")) {
+                let len = caps[1].parse::<usize>().expect("regex guarantees int");
+                let idx_from = caps[2].parse::<usize>().expect("regex guarantees int");
+                let idx_to = caps[3].parse::<usize>().expect("regex guarantees int");
+
+                // self.stacks[idx_to].extend_from_slice(&mut self.stacks[idx_from][0..1])
+                // borrow checker not happy
+
+                // let sequence = &self.stacks[idx_from][0..1];
+                // self.stacks[idx_to].extend_from_slice(sequence);
+                // borrow checker still not happy
+            }
+        }
+
+    }
 
     fn top_sequence(self: &Self) -> &str {
         "hi"
@@ -77,7 +97,6 @@ fn main() {
     
     let mut stack = CrateStacks::from_file(input_file)
         .expect("puzzle input should guarantee CrateStacks");
-    println!("{:?}", stack);
     stack.perform_sequence_from_file(input_file);
     let top_crates = stack.top_sequence();
 
