@@ -7,4 +7,4 @@ I've been reading The Book to learn rust, and came across [this youtube video](h
 #### day 4
 regex crate
 lazy_static
-```git rm --cached -r '*/*/target*'``` worked to delete all the target files from this repo (I think)
+```git rm --cached -r '*/*/target*'``` worked to delete all the target files from this repo (I think), but it looks like ```'**/target*'``` would have been the idiomatic way to do this.
