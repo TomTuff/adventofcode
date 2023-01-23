@@ -2,7 +2,10 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use regex;
 
-//(\[[A-Z]\]\s|\s{4})
+enum Crane {
+    CrateMover9000,
+    CrateMover9001,
+}
 
 #[derive(Default, Debug)]
 struct CrateStacks {
@@ -63,7 +66,7 @@ impl CrateStacks {
         self.stacks.resize(num_crates, Default::default());
     }
 
-    fn perform_sequence_from_file(self: &mut Self, file_path: &str) {
+    fn perform_sequence_from_file(self: &mut Self, file_path: &str, crane: Crane) {
         let file = File::open(file_path).expect("we should have this file 🤔");
         let reader = BufReader::new(file);
 
@@ -73,33 +76,38 @@ impl CrateStacks {
             let line_str = &line.expect("this should be a valid line 🤔");
             if let Some(caps) = re_command.captures(&line_str) {
 
-                //debug
-                println!("stacks before command = {line_str}\n{:?}", self.stacks);
+                // //debug
+                // println!("stacks before command = {line_str}\n{:?}", self.stacks);
 
                 let len = caps[1].parse::<usize>().expect("regex guarantees int");
                 let mut x = Vec::with_capacity(len);
                 let idx_from = caps[2].parse::<usize>().expect("regex guarantees int") - 1;
-                let len_from = self.stacks[idx_from].len();
                 let idx_to = caps[3].parse::<usize>().expect("regex guarantees int") - 1;
                 let len_to = self.stacks[idx_to].len();
                 
-                //debug
-                println!("len: {len},     idx_from: {idx_from},     idx_to: {idx_to},     len_from: {len_from}");
+                // //debug
+                // println!("len: {len},     idx_from: {idx_from},     idx_to: {idx_to},     len_from: {len_from}");
 
-                for _ in 0..len {
-                    // self.stacks[idx_to].extend(self.stacks[idx_from]);
-                    x.push(self.stacks[idx_from].pop().unwrap());
+                match crane {
+                    Crane::CrateMover9000 => {
+                        for _ in 0..len {
+                            x.push(self.stacks[idx_from].pop().unwrap());
+                        }
+                    }
+                    Crane::CrateMover9001 => {
+                        for _ in 0..len {
+                            x.insert(0, self.stacks[idx_from].pop().unwrap());
+                        }
+                    }
                 }
 
                 for _ in  0..len {
                     self.stacks[idx_to].insert(len_to, x.pop().unwrap());
                 }
 
-                //debug
-                println!("x: {:?}", x);
-
-                //debug                 
-                println!("stacks after:\n{:?}\n\n\n", self.stacks);
+                // //debug
+                // println!("x: {:?}", x);
+                // println!("stacks after:\n{:?}\n\n\n", self.stacks);
             }
         }
 
@@ -117,10 +125,17 @@ impl CrateStacks {
 fn main() {    
     let input_file = "real_input.txt";
     
-    let mut stack = CrateStacks::from_file(input_file)
+    let mut stack1 = CrateStacks::from_file(input_file)
         .expect("puzzle input should guarantee CrateStacks");
-    stack.perform_sequence_from_file(input_file);
-    let top_crates = stack.top_sequence();
+    stack1.perform_sequence_from_file(input_file, Crane::CrateMover9000);
+    let top_crates1 = stack1.top_sequence();
 
-    println!("The sequence of crates at the top of each stack: {top_crates}");
+    println!("The sequence of crates at the top of each stack, if using the CrateMover9000, will be: {top_crates1}");
+    
+    let mut stack2 = CrateStacks::from_file(input_file)
+        .expect("puzzle input should guarantee CrateStacks");
+    stack2.perform_sequence_from_file(input_file, Crane::CrateMover9001);
+    let top_crates2 = stack2.top_sequence();
+
+    println!("The sequence of crates at the top of each stack, if using the CrateMover9001, will be: {top_crates2}");
 }

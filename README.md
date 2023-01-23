@@ -9,8 +9,4 @@ I've been reading The Book to learn rust, and came across [this youtube video](h
 - lazy_static
 - ```git rm --cached -r '*/*/target*'``` worked to delete all the target files from this repo, but it looks like ```'**/target*'``` would have been the idiomatic way to do this.
 #### day 5
-- resize a vec like
-```
-        self.stacks.clear();
-        self.stacks.resize(num_crates, Default::default());
-```
+- My first real struggle with the borrow checker, ```while making CrateStacks::perform_sequence_from_file()```
