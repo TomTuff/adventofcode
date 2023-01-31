@@ -28,7 +28,13 @@ impl<'a> Tree<'a> {
     fn cd(self: &Self, dirname: &str) -> Option<&Tree> {
         if dirname == ".." {
             self.parent
-        } else {
+        } else if dirname == "/" {
+            let mut dir: Option<&Tree> = Some(self);
+            while let Some(this_dir) = dir?.cd("..") {
+                dir = Some(this_dir)
+            }
+            return dir;
+        }else {
             for dir in self.dirs.iter() {
                 if dir.name == dirname {
                     return Some(&dir);
@@ -38,13 +44,26 @@ impl<'a> Tree<'a> {
         }
     }
 
+    fn full_path(self: &Self) -> Option<String> {
+        let mut result = self.name.to_owned();
+        let mut dir = Some(self);
+        while let Some(this_dir) = dir?.cd("..") {
+            result = format!("{}{}", &this_dir.name, result);
+        }
+        Some(result)
+    }
+
     fn from_file(file_path: &str) -> Tree {   
+        // this the object we are filling out
         let mut root = Tree {
             parent: None,
             name: "/".to_string(),
             files: vec![],
             dirs: vec![],
         };
+
+        // and here's an object we'll use to navigate it
+        let mut here = &mut root;
 
         let re_cd = regex::Regex::new(r"\$ cd (.+)").unwrap(); 
         let re_ls = regex::Regex::new(r"\$ ls").unwrap(); 
@@ -53,9 +72,8 @@ impl<'a> Tree<'a> {
 
         let file = File::open(file_path).expect("we should have this file 🤔");
         let reader = BufReader::new(file);
-        let mut it = reader.lines();
 
-        while let Some(line) = it.next() {
+        for line in reader.lines() {
             let line_str = line.unwrap();
             println!("line: {line_str}");
             if let Some(cap) = re_cd.captures(&line_str) {
@@ -63,45 +81,34 @@ impl<'a> Tree<'a> {
                 println!("found cd instruction to dir {cd_dir}");
             } else if re_ls.is_match(&line_str) {
                 println!("found ls instruction")
+                // I was thinking that here we should use .next() to find the dir's contents,
+                // but then we will go a step to far and there's no way to rewind the iterator.
+                // if we see a statement that matches re_dir or re_doc, we just need to know 
+                // which directory was listed last.
+            } else if let Some(cap) = re_dir.captures(&line_str) {
+                let dir_name = cap.get(1).expect("this regex has a capture group").as_str();
+                println!("Adding dir here; here's dirs: {:?}", here.dirs);
+                // in case we do ls on the same directory twice, we don't want to double up on the work
+                if !here.dirs.iter().any(|dir| {
+                    dir.name == dir_name
+                }) {
+                    println!("add {dir_name}");
+                    here.dirs.push(Tree {                        
+                        parent: Some(here),
+                        name: dir_name.to_owned(),
+                        files: vec![],
+                        dirs: vec![],
+                    });
+                }
             }
         }
-        // for line in reader.lines() {
-        //     let line_str = line.expect("Should be a string");
-
-        // }
-
+        
         root
     }
 }
 
 fn main() {
-    // // let's try definining a file system..
-    // let t = Tree {
-    //     name: String::from("/"),
-    //     files: vec![
-    //         File { name: "tmp.txt".to_string(), size: 12 }, 
-    //         File { name: "notes.txt".to_string(), size: 301 }
-    //     ],
-    //     dirs: vec![
-    //         Tree {
-    //             name: String::from("home/"),
-    //             files: vec![
-    //                 File { name: "hello.txt".to_string(), size: 123 }, 
-    //                 File { name: "bye.txt".to_string(), size: 101 }
-    //             ],
-    //             dirs: vec![
-    //                 Tree {
-    //                     name: String::from("docs/"),
-    //                     files: vec![
-    //                         File { name: "essay.txt".to_string(), size: 1024 }, 
-    //                         File { name: "contacts.txt".to_string(), size: 355 }
-    //                     ],
-    //                     dirs: vec![],
-    //                 }
-    //             ],
-    //         }
-    //     ]
-    // };
-
     let T = Tree::from_file("test_input.txt");
+    println!("---");
+    println!("{:?}", T);
 }
