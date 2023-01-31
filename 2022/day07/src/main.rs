@@ -5,6 +5,7 @@
 // implementation in rust, and see if there are any obvious improvements
 // I can implement. Probably Rc<> now that I think about it?
 
+//use std::borrow::BorrowMut;  // VS CODE REALLY GOT ME HERE
 use std::io::{BufReader, BufRead};
 use std::fs::File;
 use regex;
@@ -29,18 +30,20 @@ struct Tree {
 }
 
 impl Tree {
-    fn cd(self: &Self, dirname: &str) -> Option<&Tree> {
+    fn cd(self: &Self, dirname: &str) -> Option<&Rc<RefCell<Tree>>> {
         if dirname == ".." {
-            self.parent
+            self.parent.as_ref()
         } else if dirname == "/" {
-            let mut dir: Option<&Tree> = Some(self);
-            while let Some(this_dir) = dir?.cd("..") {
-                dir = Some(this_dir)
+            let this_dir = self;
+            while let Some(parent_dir) = this_dir.cd("..") {
+                if parent_dir.borrow().name == "/" {
+                    return Some(parent_dir)
+                }
             }
-            return dir;
+            None
         }else {
             for dir in self.dirs.iter() {
-                if dir.name == dirname {
+                if dir.borrow().name == dirname {
                     return Some(&dir);
                 }
             }
@@ -52,22 +55,23 @@ impl Tree {
         let mut result = self.name.to_owned();
         let mut dir = Some(self);
         while let Some(this_dir) = dir?.cd("..") {
-            result = format!("{}{}", &this_dir.name, result);
+            result = format!("{}{}", &this_dir.borrow().name, result);
         }
         Some(result)
     }
 
-    fn from_file(file_path: &str) -> Tree {   
+    fn from_file(file_path: &str) -> Rc<RefCell<Tree>> {   
         // this the object we are filling out
-        let mut root = Tree {
+        let root = Rc::new(RefCell::new(Tree {
             parent: None,
             name: "/".to_string(),
             files: vec![],
             dirs: vec![],
-        };
+        }));
 
-        // and here's an object we'll use to navigate it
-        let mut here = &mut root;
+        let mut here = Rc::clone(&root);
+
+        println!("{:?}", root);
 
         let re_cd = regex::Regex::new(r"\$ cd (.+)").unwrap(); 
         let re_ls = regex::Regex::new(r"\$ ls").unwrap(); 
@@ -91,19 +95,26 @@ impl Tree {
                 // which directory was listed last.
             } else if let Some(cap) = re_dir.captures(&line_str) {
                 let dir_name = cap.get(1).expect("this regex has a capture group").as_str();
-                println!("Adding dir here; here's dirs: {:?}", here.dirs);
+                println!("Adding dir here; here's dirs: {:?}", here.borrow().dirs);
                 // in case we do ls on the same directory twice, we don't want to double up on the work
-                if !here.dirs.iter().any(|dir| {
-                    dir.name == dir_name
+                if !here.borrow().dirs.iter().any(|dir| {
+                    dir.borrow().name == dir_name
                 }) {
                     println!("add {dir_name}");
-                    // here.dirs.push(Tree {                        
-                    //     parent: Some(here),
-                    //     name: dir_name.to_owned(),
-                    //     files: vec![],
-                    //     dirs: vec![],
-                    // });
+                    let dir = Rc::new(RefCell::new(Tree {
+                        //parent: Some(Rc::clone(&here)),
+                        parent: None,
+                        name: dir_name.to_owned(),
+                        files: vec![],
+                        dirs: vec![],
+                    }));
+                    here.borrow_mut().dirs.push(Rc::clone(&dir));  // VS CODE REALLY GOT ME HERE, LOOK OUT FOR RANDOM IMPORTS
+                    {
+                      let mut mut_dir = dir.borrow_mut();
+                      mut_dir.parent = Some(Rc::clone(&here));
+                    }
                 }
+                println!("Now, here's dirs: {:?}", here.borrow().dirs);
             }
         }
         
