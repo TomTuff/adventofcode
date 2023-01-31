@@ -8,6 +8,8 @@
 use std::io::{BufReader, BufRead};
 use std::fs::File;
 use regex;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 // Using "Doc" instead of the name "File" since std::fs::File is using that name
 #[derive(Debug)]
@@ -16,15 +18,17 @@ struct Doc {
     size: usize,
 }
 
+// let's mimic the structure from this article:
+// https://applied-math-coding.medium.com/a-tree-structure-implemented-in-rust-8344783abd75
 #[derive(Debug)]
-struct Tree<'a> {
-    parent: Option<&'a Tree<'a>>,
+struct Tree {
+    parent: Option<Rc<RefCell<Tree>>>,
     name: String,
     files: Vec<Doc>,
-    dirs: Vec<Tree<'a>>,
+    dirs: Vec<Rc<RefCell<Tree>>>,
 }
 
-impl<'a> Tree<'a> {
+impl Tree {
     fn cd(self: &Self, dirname: &str) -> Option<&Tree> {
         if dirname == ".." {
             self.parent
@@ -93,12 +97,12 @@ impl<'a> Tree<'a> {
                     dir.name == dir_name
                 }) {
                     println!("add {dir_name}");
-                    here.dirs.push(Tree {                        
-                        parent: Some(here),
-                        name: dir_name.to_owned(),
-                        files: vec![],
-                        dirs: vec![],
-                    });
+                    // here.dirs.push(Tree {                        
+                    //     parent: Some(here),
+                    //     name: dir_name.to_owned(),
+                    //     files: vec![],
+                    //     dirs: vec![],
+                    // });
                 }
             }
         }
