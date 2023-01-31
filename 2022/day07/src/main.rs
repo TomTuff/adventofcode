@@ -5,6 +5,7 @@
 // implementation in rust, and see if there are any obvious improvements
 // I can implement. Probably Rc<> now that I think about it?
 
+use std::fmt::Display;
 //use std::borrow::BorrowMut;  // VS CODE REALLY GOT ME HERE
 use std::io::{BufReader, BufRead};
 use std::fs::File;
@@ -17,6 +18,12 @@ use std::rc::Rc;
 struct Doc {
     name: String,
     size: usize,
+}
+
+impl Display for Doc {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {        
+        write!(f, "({}: {})", self.name, self.size)
+    }
 }
 
 // let's mimic the structure from this article:
@@ -60,6 +67,17 @@ impl Tree {
         Some(result)
     }
 
+    fn print(&self) -> String {
+        return String::from("[")
+        + &self
+            .dirs
+            .iter()
+            .map(|tn| format!("{}", tn.borrow().name))
+            .collect::<Vec<String>>()
+            .join(",")
+        + "]";
+    }
+
     fn from_file(file_path: &str) -> Rc<RefCell<Tree>> {   
         // this the object we are filling out
         let root = Rc::new(RefCell::new(Tree {
@@ -95,7 +113,7 @@ impl Tree {
                 // which directory was listed last.
             } else if let Some(cap) = re_dir.captures(&line_str) {
                 let dir_name = cap.get(1).expect("this regex has a capture group").as_str();
-                println!("Adding dir here; here's dirs: {:?}", here.borrow().dirs);
+                //println!("Adding dir here; here's dirs: {:?}", here.borrow().dirs);
                 // in case we do ls on the same directory twice, we don't want to double up on the work
                 if !here.borrow().dirs.iter().any(|dir| {
                     dir.borrow().name == dir_name
@@ -114,7 +132,7 @@ impl Tree {
                       mut_dir.parent = Some(Rc::clone(&here));
                     }
                 }
-                println!("Now, here's dirs: {:?}", here.borrow().dirs);
+                //println!("Now, here's dirs: {:?}", here.borrow().dirs);
             }
         }
         
@@ -122,8 +140,25 @@ impl Tree {
     }
 }
 
+impl Display for Tree {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        println!("???S???");
+        let mut result = String::new();
+        println!("len self dirs: {:?}", self.dirs.len());
+        self.dirs.iter().for_each(|s| {
+            if result.len() > 0 {
+                result = format!("{}{}", result, ", ");
+            }
+            result = format!("{}{}", result, s.borrow().name);      
+            println!("result: {result}")      
+        });
+        write!(f, "{}", result)        
+    }
+}
+
+
 fn main() {
     let T = Tree::from_file("test_input.txt");
     println!("---");
-    println!("{:?}", T);
+    println!("{:?}", T.borrow().print());
 }
