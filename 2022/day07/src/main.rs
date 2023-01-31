@@ -36,28 +36,33 @@ struct Tree {
     dirs: Vec<Rc<RefCell<Tree>>>,
 }
 
-impl Tree {
-    fn cd(self: &Self, dirname: &str) -> Option<&Rc<RefCell<Tree>>> {
+impl Rc<RefCell<Tree>> {    
+    fn cd(self: &mut Self, dirname: &str) {
         if dirname == ".." {
             self.parent.as_ref()
-        } else if dirname == "/" {
-            let this_dir = self;
-            while let Some(parent_dir) = this_dir.cd("..") {
-                if parent_dir.borrow().name == "/" {
-                    return Some(parent_dir)
-                }
-            }
-            None
+        // hacky, but we'll handle cd("/") in the big loop..
+        // } else if dirname == "/" {
+        //     let this_dir = self;
+        //     if this_dir.name == "/" {
+        //         return Some(&Rc::new(RefCell::new(*self)));
+        //     }
+        //     while let Some(parent_dir) = this_dir.cd("..") {
+        //         if parent_dir.borrow().name == "/" {
+        //             return Some(parent_dir)
+        //         }
+        //     }
+        //     None
         }else {
             for dir in self.dirs.iter() {
                 if dir.borrow().name == dirname {
-                    return Some(&dir);
+                    self = &dir
                 }
             }
-            None
         }
     }
+}
 
+impl Tree {
     fn full_path(self: &Self) -> Option<String> {
         let mut result = self.name.to_owned();
         let mut dir = Some(self);
@@ -105,6 +110,11 @@ impl Tree {
             if let Some(cap) = re_cd.captures(&line_str) {
                 let cd_dir = cap.get(1).expect("this regex has a capture group").as_str();
                 println!("found cd instruction to dir {cd_dir}");
+                if cd_dir == "/" {
+                    here = Rc::clone(&root);
+                } else {
+                    here.borrow().cd(cd_dir).unwrap();
+                }
             } else if re_ls.is_match(&line_str) {
                 println!("found ls instruction")
                 // I was thinking that here we should use .next() to find the dir's contents,
