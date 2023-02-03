@@ -48,19 +48,19 @@ impl Default for Tree {
 
 impl Display for Tree {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        println!("Attempt to display Tree with name {}", self.name);
+        //println!("Attempt to display Tree with name {}", self.name);
         let mut s = "[".to_string();
         if self.dirs.len() == 0 {               
-            println!("self.dirs.len() == 0");
+            //println!("self.dirs.len() == 0");
             let l = self.files.len();
             let mut sep = ", ";
             for (i, x) in self.files.iter().enumerate() {         
-                println!("for loop 1 on i = {i}");
+                //println!("for loop 1 on i = {i}");
                 if i + 1 == l { sep = "" }
                 s = format!("{}{}", x, sep)
             }         
         } else {       
-            println!("self.dirs.len() != 0");
+            //println!("self.dirs.len() != 0");
             let l = self.files.len();
             let mut sep = ", ";
             let mut i = 0;
@@ -69,7 +69,7 @@ impl Display for Tree {
                 if i == self.dirs.len() {
                     sep = "";
                 }
-                println!("for loop 2 on x.name = {}", x.borrow().name);
+                //println!("for loop 2 on x.name = {}", x.borrow().name);
                 s = format!("{}{} {}{}", s, x.borrow().name, x.borrow(), sep)
             }    
         }
@@ -79,13 +79,14 @@ impl Display for Tree {
 
 impl Tree {    
     fn cd(self: &mut Self, dirname: &str) -> Option<&Rc<RefCell<Tree>>> {
+        //println!("cd with self.name = {}, dirname = {}", self.name, dirname);
         if dirname == ".." {
             return self.parent.as_ref();
         } if dirname == "/" {
             return None 
         }else {
             for dir in self.dirs.iter() {
-                if dir.borrow().name == dirname {
+                if dir.borrow().name == format!("{}/", dirname) {
                     return Some(dir);
                 }
             }
@@ -93,14 +94,22 @@ impl Tree {
         }
     }
 
-    // this function causes a hang up..
     fn full_path(self: &Self) -> String {
-        let mut result = self.name.to_owned();
+        let mut result = self.name.clone();
         let parent = &self.parent;
+        //println!("write full name for self.name = {}", self.name);
         match parent {
-            None => {} // case where self is root
+            None => {
+                //println!("match None");
+                // case where self is root
+                //result = format!("/{}", result)
+            } 
             Some(ancestor) => {
+                //println!("match Some, ancestor.name = {}", &ancestor.borrow().name);
+                result = format!("{}{}", ancestor.borrow().name, result);
+                
                 while let Some(ancestor) = &ancestor.borrow().parent {
+                    //print!("found parent with name {}; current value for result: {}", ancestor.borrow().name, result);
                     result = format!("{}{}", ancestor.borrow().name, result)
                 }
             }
@@ -152,7 +161,7 @@ impl Tree {
                     println!("add {dir_name}");
                     let dir = Rc::new(RefCell::new(Tree {
                         parent: Some(Rc::clone(&here)),
-                        name: dir_name.to_owned(),
+                        name: format!("{}{}", dir_name, "/").to_owned(),
                         files: vec![],
                         dirs: vec![],
                     }));
@@ -161,7 +170,7 @@ impl Tree {
                 }
             }
         }
-        
+        println!("full path: {}", root.borrow().dirs[0].borrow().full_path());
         root
     }
 }
