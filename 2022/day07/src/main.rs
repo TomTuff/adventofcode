@@ -36,40 +36,45 @@ struct Tree {
     dirs: Vec<Rc<RefCell<Tree>>>,
 }
 
-impl Rc<RefCell<Tree>> {    
-    fn cd(self: &mut Self, dirname: &str) {
-        if dirname == ".." {
-            self.parent.as_ref()
-        // hacky, but we'll handle cd("/") in the big loop..
-        // } else if dirname == "/" {
-        //     let this_dir = self;
-        //     if this_dir.name == "/" {
-        //         return Some(&Rc::new(RefCell::new(*self)));
-        //     }
-        //     while let Some(parent_dir) = this_dir.cd("..") {
-        //         if parent_dir.borrow().name == "/" {
-        //             return Some(parent_dir)
-        //         }
-        //     }
-        //     None
-        }else {
-            for dir in self.dirs.iter() {
-                if dir.borrow().name == dirname {
-                    self = &dir
-                }
-            }
+impl Default for Tree {
+    fn default() -> Self {
+        Tree {
+            parent: None,
+            name: "/".to_owned(),
+            files: vec![],
+            dirs: vec![],
         }
     }
 }
 
-impl Tree {
-    fn full_path(self: &Self) -> Option<String> {
-        let mut result = self.name.to_owned();
-        let mut dir = Some(self);
-        while let Some(this_dir) = dir?.cd("..") {
-            result = format!("{}{}", &this_dir.borrow().name, result);
+impl Tree {    
+    fn cd(self: &mut Self, dirname: &str) -> Option<&Rc<RefCell<Tree>>> {
+        if dirname == ".." {
+            return self.parent.as_ref();
+        } if dirname == "/" {
+            return None 
+        }else {
+            for dir in self.dirs.iter() {
+                if dir.borrow().name == dirname {
+                    return Some(dir);
+                }
+            }
+            return None;
         }
-        Some(result)
+    }
+
+    fn full_path(self: &Self) -> String {
+        let mut result = self.name.to_owned();
+        let parent = &self.parent;
+        match parent {
+            None => {} // case where self is root
+            Some(ancestor) => {
+                while let Some(ancestor) = &ancestor.borrow().parent {
+                    result = format!("{}{}", ancestor.borrow().name, result)
+                }
+            }
+        }
+        result
     }
 
     fn print(&self) -> String {
