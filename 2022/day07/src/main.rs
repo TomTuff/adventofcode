@@ -28,7 +28,6 @@ impl Display for Doc {
 
 // let's mimic the structure from this article:
 // https://applied-math-coding.medium.com/a-tree-structure-implemented-in-rust-8344783abd75
-#[derive(Debug)]
 struct Tree {
     parent: Option<Rc<RefCell<Tree>>>,
     name: String,
@@ -44,6 +43,32 @@ impl Default for Tree {
             files: vec![],
             dirs: vec![],
         }
+    }
+}
+
+impl Display for Tree {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        println!("Attempt to display Tree with name {}", self.name);
+        let mut s = "[".to_string();
+        if self.dirs.len() == 0 {               
+            println!("self.dirs.len() == 0");
+            let l = self.files.len();
+            let mut sep = ", ";
+            for (i, x) in self.files.iter().enumerate() {         
+                println!("for loop 1 on i = {i}");
+                if i + 1 == l { sep = "" }
+                s = format!("{}{}", x, sep)
+            }         
+        } else {       
+            println!("self.dirs.len() != 0");
+            let l = self.files.len();
+            let mut sep = ", ";
+            for x in &self.dirs {    
+                println!("for loop 2 on x.name = {}", x.borrow().name);
+                s = format!("{}{} {}{}", s, x.borrow().name, x.borrow(), sep)
+            }    
+        }
+        write!(f, "{}{}", s, "]")
     }
 }
 
@@ -63,6 +88,7 @@ impl Tree {
         }
     }
 
+    // this function causes a hang up..
     fn full_path(self: &Self) -> String {
         let mut result = self.name.to_owned();
         let parent = &self.parent;
@@ -77,29 +103,13 @@ impl Tree {
         result
     }
 
-    fn print(&self) -> String {
-        return String::from("[")
-        + &self
-            .dirs
-            .iter()
-            .map(|tn| format!("{}", tn.borrow().name))
-            .collect::<Vec<String>>()
-            .join(",")
-        + "]";
-    }
-
     fn from_file(file_path: &str) -> Rc<RefCell<Tree>> {   
         // this the object we are filling out
-        let root = Rc::new(RefCell::new(Tree {
-            parent: None,
-            name: "/".to_string(),
-            files: vec![],
-            dirs: vec![],
-        }));
+        let root = Rc::new(RefCell::new(Tree::default()));
+        println!("root: {}", root.borrow());
 
+        // this is our "perspective" on the tree as we populate it
         let mut here = Rc::clone(&root);
-
-        println!("{:?}", root);
 
         let re_cd = regex::Regex::new(r"\$ cd (.+)").unwrap(); 
         let re_ls = regex::Regex::new(r"\$ ls").unwrap(); 
@@ -116,9 +126,12 @@ impl Tree {
                 let cd_dir = cap.get(1).expect("this regex has a capture group").as_str();
                 println!("found cd instruction to dir {cd_dir}");
                 if cd_dir == "/" {
-                    here = Rc::clone(&root);
+                    // turns out cd / is only in the puzzle input once so this doesn't really matter. we need no expression here.
                 } else {
-                    here.borrow().cd(cd_dir).unwrap();
+                    // let interim = here.borrow_mut().cd(cd_dir).unwrap();
+                    // here = interim;
+                    let interim = Rc::clone(here.borrow_mut().cd(cd_dir).unwrap());
+                    here = interim;
                 }
             } else if re_ls.is_match(&line_str) {
                 println!("found ls instruction")
@@ -128,26 +141,19 @@ impl Tree {
                 // which directory was listed last.
             } else if let Some(cap) = re_dir.captures(&line_str) {
                 let dir_name = cap.get(1).expect("this regex has a capture group").as_str();
-                //println!("Adding dir here; here's dirs: {:?}", here.borrow().dirs);
+                // println!("Adding dir here; here's dirs: {:?}", here.borrow().dirs);
                 // in case we do ls on the same directory twice, we don't want to double up on the work
-                if !here.borrow().dirs.iter().any(|dir| {
-                    dir.borrow().name == dir_name
-                }) {
+                if !here.borrow().dirs.iter().any(|dir| { dir.borrow().name == dir_name }) {
                     println!("add {dir_name}");
                     let dir = Rc::new(RefCell::new(Tree {
-                        //parent: Some(Rc::clone(&here)),
-                        parent: None,
+                        parent: Some(Rc::clone(&here)),
                         name: dir_name.to_owned(),
                         files: vec![],
                         dirs: vec![],
                     }));
                     here.borrow_mut().dirs.push(Rc::clone(&dir));  // VS CODE REALLY GOT ME HERE, LOOK OUT FOR RANDOM IMPORTS
-                    {
-                      let mut mut_dir = dir.borrow_mut();
-                      mut_dir.parent = Some(Rc::clone(&here));
-                    }
+                    println!("here: {}", here.borrow());
                 }
-                //println!("Now, here's dirs: {:?}", here.borrow().dirs);
             }
         }
         
@@ -155,25 +161,9 @@ impl Tree {
     }
 }
 
-impl Display for Tree {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        println!("???S???");
-        let mut result = String::new();
-        println!("len self dirs: {:?}", self.dirs.len());
-        self.dirs.iter().for_each(|s| {
-            if result.len() > 0 {
-                result = format!("{}{}", result, ", ");
-            }
-            result = format!("{}{}", result, s.borrow().name);      
-            println!("result: {result}")      
-        });
-        write!(f, "{}", result)        
-    }
-}
-
 
 fn main() {
     let T = Tree::from_file("test_input.txt");
     println!("---");
-    println!("{:?}", T.borrow().print());
+    println!("{}", T.borrow());
 }
