@@ -46,32 +46,58 @@ impl Default for Tree {
     }
 }
 
+// impl Display for Tree {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         //println!("Attempt to display Tree with name {}", self.name);
+//         let mut s = "[".to_string();
+//         if self.dirs.len() == 0 {               
+//             //println!("self.dirs.len() == 0");
+//             let l = self.files.len();
+//             let mut sep = ", ";
+//             for (i, x) in self.files.iter().enumerate() {         
+//                 //println!("for loop 1 on i = {i}");
+//                 if i + 1 == l { sep = "" }
+//                 s = format!("{}{}{}", s, x, sep)
+//             }         
+//         } else {       
+//             //println!("self.dirs.len() != 0");
+//             let l = self.files.len();
+//             let mut sep = ", ";
+//             let mut i = 0;
+//             for x in &self.dirs {    
+//                 i += 1;
+//                 if i == self.dirs.len() {
+//                     sep = "";
+//                 }
+//                 //println!("for loop 2 on x.name = {}", x.borrow().name);
+//                 s = format!("{}{} {}{}", s, x.borrow().name, x.borrow(), sep)
+//             }    
+//         }
+//         write!(f, "{}{}", s, "]")
+//     }
+// }
+
 impl Display for Tree {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         //println!("Attempt to display Tree with name {}", self.name);
-        let mut s = "[".to_string();
-        if self.dirs.len() == 0 {               
-            //println!("self.dirs.len() == 0");
-            let l = self.files.len();
-            let mut sep = ", ";
-            for (i, x) in self.files.iter().enumerate() {         
-                //println!("for loop 1 on i = {i}");
-                if i + 1 == l { sep = "" }
-                s = format!("{}{}", x, sep)
-            }         
-        } else {       
-            //println!("self.dirs.len() != 0");
-            let l = self.files.len();
-            let mut sep = ", ";
-            let mut i = 0;
-            for x in &self.dirs {    
-                i += 1;
-                if i == self.dirs.len() {
-                    sep = "";
-                }
-                //println!("for loop 2 on x.name = {}", x.borrow().name);
-                s = format!("{}{} {}{}", s, x.borrow().name, x.borrow(), sep)
-            }    
+        let mut s = "[".to_string();     
+        let l = self.files.len();
+        let mut sep = ", ";
+        let mut i = 0;
+        for x in &self.dirs {    
+            i += 1;
+            if i == self.dirs.len() {
+                sep = " ";
+            }
+            //println!("for loop 2 on x.name = {}", x.borrow().name);
+            s = format!("{}{} {}{}", s, x.borrow().name, x.borrow(), sep)
+        }
+        let l = self.files.len();
+        let mut sep = ", ";
+        for (i, x) in self.files.iter().enumerate() {         
+            //println!("for loop 1 on i = {i}");
+            if i + 1 == l { sep = "" }
+            s = format!("{}{}{}", s, x, sep)    
         }
         write!(f, "{}{}", s, "]")
     }
@@ -128,7 +154,7 @@ impl Tree {
         let re_cd = regex::Regex::new(r"\$ cd (.+)").unwrap(); 
         let re_ls = regex::Regex::new(r"\$ ls").unwrap(); 
         let re_dir = regex::Regex::new(r"dir (.+)").unwrap(); 
-        let re_doc = regex::Regex::new(r"\d+ (.+)").unwrap(); 
+        let re_doc = regex::Regex::new(r"(\d+) (.+)").unwrap(); 
 
         let file = File::open(file_path).expect("we should have this file 🤔");
         let reader = BufReader::new(file);
@@ -137,7 +163,10 @@ impl Tree {
             let line_str = line.unwrap();
             println!("line: {line_str}");
             if let Some(cap) = re_cd.captures(&line_str) {
-                let cd_dir = cap.get(1).expect("this regex has a capture group").as_str();
+                let cd_dir = cap
+                    .get(1)
+                    .expect("this regex has a capture group")
+                    .as_str();
                 println!("found cd instruction to dir {cd_dir}");
                 if cd_dir == "/" {
                     // turns out cd / is only in the puzzle input once so this doesn't really matter. we need no expression here.
@@ -168,9 +197,28 @@ impl Tree {
                     here.borrow_mut().dirs.push(Rc::clone(&dir));  // VS CODE REALLY GOT ME HERE, LOOK OUT FOR RANDOM IMPORTS
                     println!("here: {}", here.borrow());
                 }
+            } else if let Some(cap) = re_doc.captures(&line_str) {
+                let size = cap
+                    .get(1)
+                    .expect("this regex has a capture group")
+                    .as_str()
+                    .parse::<usize>()
+                    .expect("this regex capture group ensures digits");
+                let name = cap
+                    .get(2)
+                    .expect("this regex has a capture group")
+                    .as_str()
+                    .to_string();
+                println!("found doc, name = {name}, size = {size}");
+                here.borrow_mut().files.push( Doc {
+                    name,
+                    size,
+                });
+                println!("{}", here.borrow());
+                println!("files len of here: {}", here.borrow().files.len())
             }
         }
-        println!("full path: {}", root.borrow().dirs[0].borrow().full_path());
+        //println!("full path: {}", root.borrow().dirs[0].borrow().full_path());
         root
     }
 }
