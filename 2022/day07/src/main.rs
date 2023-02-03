@@ -225,7 +225,7 @@ impl Tree {
 
 
 fn main() {
-    let T = Tree::from_file("test_input.txt");
+    let T = Tree::from_file("real_input.txt");
     println!("---");
     println!("{}", T.borrow());
 }
