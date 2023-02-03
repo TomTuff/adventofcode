@@ -63,7 +63,12 @@ impl Display for Tree {
             println!("self.dirs.len() != 0");
             let l = self.files.len();
             let mut sep = ", ";
+            let mut i = 0;
             for x in &self.dirs {    
+                i += 1;
+                if i == self.dirs.len() {
+                    sep = "";
+                }
                 println!("for loop 2 on x.name = {}", x.borrow().name);
                 s = format!("{}{} {}{}", s, x.borrow().name, x.borrow(), sep)
             }    
